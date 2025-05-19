@@ -1,5 +1,4 @@
 # Poke Metrics
-
 ![Cover](./cover.png "Cover" )
 
 This project was created with the purpose of demonstrating metric generation and tracing in different scenarios: API, gRPC, and Messaging.
