@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "trainer/internal/grpc";
+
+service trainer {
+  rpc CreateTrainer (CreateTrainerRequest) returns (CreateTrainerResponse) {}
+  rpc GetTrainer (GetTrainerRequest) returns (GetTrainerResponse) {}
+  rpc AddPokemon (AddPokemonRequest) returns (AddPokemonResponse) {}
+}
+
+
+message Pokemon {
+  int32 id = 1;
+  string name = 2;
+  repeated string types = 3;
+}
+
+message CreateTrainerRequest {
+  string name = 1;
+  string favorite_pokemon_type = 2;
+}
+
+message CreateTrainerResponse {
+  string id = 1;
+  string name = 2;
+  string favorite_pokemon_type = 3;
+  repeated Pokemon pokemons = 4;
+}
+
+message GetTrainerRequest {
+  string id = 1;
+}
+
+message GetTrainerResponse {
+  string id = 1;
+  string name = 2;
+  string favorite_pokemon_type = 3;
+  repeated Pokemon pokemons = 4;
+}
+
+message AddPokemonRequest {
+  string trainer_id = 1;
+  int32  pokemon_id = 2;
+  string pokemon_name = 3;
+  repeated string pokemon_types = 4;
+}
+
+message AddPokemonResponse {
+  string trainer_id = 1;
+  int32 pokemon_id = 2;
+  string pokemon_name = 3;
+  repeated string pokemon_types = 4;
+}

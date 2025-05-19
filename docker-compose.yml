@@ -1,0 +1,103 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    ports:
+      - "27017:27017"
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - JAEGER_ENDPOINT=jaeger:4317
+    depends_on:
+      - jaeger
+      - mongo
+
+  trainer:
+    build:
+      context: ./trainer
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8081" # Alterada para evitar conflito com mongo-express
+      - "50051:50051"
+    environment:
+      - JAEGER_ENDPOINT=jaeger:4317
+      - MONGO_SERVICE=mongo
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    depends_on:
+      - jaeger
+      - mongo
+
+  hunt:
+    build:
+      context: ./hunt
+      dockerfile: Dockerfile
+    environment:
+      - JAEGER_ENDPOINT=jaeger:4317
+    depends_on:
+      - jaeger
+      - trainer
+      - kafka-init
+      - broker
+      
+  broker:
+      image: apache/kafka:latest
+      hostname: broker
+      container_name: broker
+      ports:
+        - 9092:9092
+      environment:
+        KAFKA_BROKER_ID: 1
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://broker:9092
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+        KAFKA_PROCESS_ROLES: broker,controller
+        KAFKA_NODE_ID: 1
+        KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:29093
+        KAFKA_LISTENERS: PLAINTEXT://broker:29092,CONTROLLER://broker:29093,PLAINTEXT_HOST://broker:9092
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+        KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+        KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+        CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+  kafka-init:
+    image: apache/kafka:latest
+    depends_on:
+      - broker
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      sleep 10
+      /opt/kafka/bin/kafka-topics.sh --create --topic hunt --bootstrap-server broker:29092 --replication-factor 1 --partitions 1 || true
+      "
