@@ -48,7 +48,7 @@ docker-compose up
 > | http code     | content-type                      | response                                                            |
 > |---------------|-----------------------------------|---------------------------------------------------------------------|
 > | `200`         | `application/json`                | `{"id": uuid, "name": string, "favorite_pokemon_type": string, pokemons []Pokemon {"id": int32, "name": string, "pokemon-types": []string} }`                                      |
-> | `400`         | `application/json`                | `{"message":"Bad Request"}`                            |
+> | `400`         | `application/json`                | `{"error": string, "message": string, "code": int}`                            |
 > | `500`         | `application/json`                | ``
 </details>
 

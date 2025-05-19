@@ -87,6 +87,10 @@ func (t *trainerMongoRepository) GetTrainer(ctx context.Context, id string) (*do
 		return nil, err
 	}
 
+	if result.ID == "" {
+		return nil, mongo.ErrNoDocuments
+	}
+
 	var pokemons []domain.Pokemon
 	for i := range result.Pokemons {
 		pokemons = append(pokemons, *domain.NewPokemon(

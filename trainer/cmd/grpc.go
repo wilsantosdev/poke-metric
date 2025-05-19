@@ -9,6 +9,7 @@ import (
 	"trainer/internal/repository"
 	"trainer/internal/service"
 
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 )
@@ -79,10 +80,12 @@ func (gs *grpcServer) GetTrainer(ctx context.Context, request *pb.GetTrainerRequ
 	defer shutdown()
 
 	trainer, err := gs.trainerService.GetTrainer(ctx, request.Id)
-	if err != nil {
+
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("trainer not found: %v", request.Id)
+	} else if err != nil {
 		return nil, fmt.Errorf("failed to get trainer: %v", err)
 	}
-	fmt.Printf("Trainer retrieved: %s\n", trainer.Name())
 
 	var pokemons []*pb.Pokemon
 	for _, pokemon := range trainer.Pokemons() {
@@ -95,8 +98,6 @@ func (gs *grpcServer) GetTrainer(ctx context.Context, request *pb.GetTrainerRequ
 			Name:  pokemon.Name(),
 			Types: types,
 		})
-
-		fmt.Println(pokemon)
 	}
 
 	return &pb.GetTrainerResponse{

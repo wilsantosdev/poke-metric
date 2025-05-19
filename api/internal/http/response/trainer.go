@@ -1,4 +1,4 @@
-package presentation
+package response
 
 import (
 	"api/internal/domain"
