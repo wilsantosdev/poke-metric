@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"api/internal/domain"
+	"api/internal/http/request"
 	"api/internal/presentation"
 	"api/internal/service"
 	"context"
@@ -35,16 +36,20 @@ func NewAPI(ctx context.Context, port string) *api {
 func (a *api) setupRoutes() {
 	a.Router.Post("/trainer", func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		var req struct {
-			Name                string `json:"name"`
-			FavoritePokemonType string `json:"favorite_pokemon_type"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
+
+		createTrainerRequest, err := request.NewCreateTrainerRequest(r.Body)
+		if err != nil {
+
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		trainer, err := a.TrainerService.CreateTrainer(r.Context(), req.Name, req.FavoritePokemonType)
+		trainer, err := a.TrainerService.CreateTrainer(
+			r.Context(),
+			createTrainerRequest.Name,
+			createTrainerRequest.FavoritePokemonType,
+		)
+
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, "Failed to create trainer", http.StatusInternalServerError)

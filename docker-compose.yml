@@ -61,13 +61,11 @@ services:
       context: ./hunt
       dockerfile: Dockerfile
     environment:
-      - JAEGER_ENDPOINT=jaeger:4317
+      - JAEGER_ENDPOINT=jaeger:4317  
     depends_on:
-      - jaeger
-      - trainer
-      - kafka-init
-      - broker
-      
+      kafka-init:
+        condition: service_completed_successfully
+
   broker:
       image: apache/kafka:latest
       hostname: broker
@@ -90,14 +88,24 @@ services:
         KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
         KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
         CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      healthcheck:
+        test: /opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server broker:9092 || exit 1
+        interval: 1s
+        timeout: 60s
+        retries: 60
 
   kafka-init:
     image: apache/kafka:latest
     depends_on:
-      - broker
+      broker:
+        condition: service_healthy
     entrypoint: ["/bin/sh", "-c"]
     command: |
       "
-      sleep 10
       /opt/kafka/bin/kafka-topics.sh --create --topic hunt --bootstrap-server broker:29092 --replication-factor 1 --partitions 1 || true
       "
+    healthcheck:
+      test: /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server broker:29092 | grep -q '^hunt$'
+      interval: 5s
+      timeout: 10s
+      retries: 10
