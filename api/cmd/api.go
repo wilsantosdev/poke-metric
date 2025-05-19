@@ -100,7 +100,7 @@ func (a *api) setupRoutes() {
 			http.Error(w, "Failed to hunt pokemon", http.StatusInternalServerError)
 			return
 		}
-
+		json.NewEncoder(w).Encode(response.NewTrainerGoingHuntResponse(*trainer))
 		w.WriteHeader(http.StatusCreated)
 	})
 }

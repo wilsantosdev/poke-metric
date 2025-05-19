@@ -56,3 +56,37 @@ docker-compose up
 <details>
  <summary><code>GET</code> <code><b>/trainer/:trainer-id</b></code> <code>(Get trainer information)</code></summary>
 
+ ##### Parameters
+
+> | name      |  type     | data type               | description                                                           |
+> |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+> | trainer-id|  required | uuid                    | Trainer's Identifier                                                  |
+
+##### Responses
+
+> | http code     | content-type                      | response                                                            |
+> |---------------|-----------------------------------|---------------------------------------------------------------------|
+> | `200`         | `application/json`                | `{"id": uuid, "name": string, "favorite_pokemon_type": string, pokemons []Pokemon {"id": int32, "name": string, "pokemon-types": []string} }`                                                       |
+> | `404`         | `application/json`                | `{"error": string, "message": string, "code": int}`                 |
+
+</details>
+
+#### Hunt Pokemon
+
+<details>
+ <summary><code>POST</code> <code><b>/trainer/:trainer-id/hunt</b></code> <code>(Hunt Pokemon)</code></summary>
+
+##### Parameters
+
+> | name      |  type     | data type               | description                                                           |
+> |-----------|-----------|-------------------------|-----------------------------------------------------------------------|
+> | trainer-id|  required | uuid                    | Trainer's Identifier                                                  |
+
+##### Responses
+
+> | http code     | content-type                      | response                                                            |
+> |---------------|-----------------------------------|---------------------------------------------------------------------|
+> | `201`         | `application/json`                | ``                                      |
+> | `500`         | `application/json`                | ``
+
+</details>

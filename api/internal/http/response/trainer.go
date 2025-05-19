@@ -2,6 +2,7 @@ package response
 
 import (
 	"api/internal/domain"
+	"fmt"
 	"strconv"
 )
 
@@ -16,6 +17,10 @@ type createTrainerResponse struct {
 	Name                string            `json:"name"`
 	FavoritePokemonType string            `json:"favorite_pokemon_type"`
 	Pokemons            []pokemonResponse `json:"pokemons"`
+}
+
+type huntResponse struct {
+	Message string `json:"message"`
 }
 
 func NewCreateTrainerResponse(trainer domain.Trainer) createTrainerResponse {
@@ -61,5 +66,11 @@ func NewGetTrainerResponse(trainer domain.Trainer) createTrainerResponse {
 		Name:                trainer.Name(),
 		FavoritePokemonType: trainer.FavotitePokemonType(),
 		Pokemons:            pokemons,
+	}
+}
+
+func NewTrainerGoingHuntResponse(trainer domain.Trainer) huntResponse {
+	return huntResponse{
+		Message: fmt.Sprintf("Trainer %s is going to hunt, with favorite Pokemon type %s", trainer.Name(), trainer.FavotitePokemonType()),
 	}
 }
