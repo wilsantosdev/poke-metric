@@ -53,7 +53,9 @@ func (h *huntService) HuntPokemon(ctx context.Context, trainerId string, favorit
 		return err
 	}
 
-	if h.captureChance(pokemon, favorite_pokemon_type) {
+	catched := h.wasCaptured(pokemon, favorite_pokemon_type)
+
+	if catched {
 		fmt.Printf("Trainer %s captured a %s!\n", trainerId, pokemon.Name())
 		err = h.trainerService.AddPokemon(ctx, trainerId, *pokemon)
 		if err != nil {
@@ -64,17 +66,17 @@ func (h *huntService) HuntPokemon(ctx context.Context, trainerId string, favorit
 		fmt.Printf("Trainer %s failed to capture a %s.\n", trainerId, pokemon.Name())
 	}
 
+	HuntTotal.WithLabelValues(trainerId, fmt.Sprint(pokemon.ID()), fmt.Sprintf("%t", catched), fmt.Sprintf("%d", attemps)).Inc()
+
 	if !h.produceNewHuntMessage(trainerId, favorite_pokemon_type, attemps, maxAttempts) {
 		fmt.Printf("Error producing new hunt message for trainer %s\n", trainerId)
 		return fmt.Errorf("error producing new hunt message for trainer %s", trainerId)
 	}
-	fmt.Printf("Produced new hunt message for trainer %s\n", trainerId)
-	fmt.Printf("Attempts: %d, Max Attempts: %d\n", attemps+1, maxAttempts)
 
 	return nil
 }
 
-func (h *huntService) captureChance(pokemon *domain.Pokemon, favoritePokemonType string) bool {
+func (h *huntService) wasCaptured(pokemon *domain.Pokemon, favoritePokemonType string) bool {
 	isFavoriteType := false
 	for _, t := range pokemon.PokemonTypes() {
 		if t.String() == favoritePokemonType {

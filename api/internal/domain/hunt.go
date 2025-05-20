@@ -5,5 +5,5 @@ import (
 )
 
 type HuntService interface {
-	HuntPokemon(ctx context.Context, trainer Trainer) error
+	HuntPokemon(ctx context.Context, trainer Trainer, maxAttemps int32) error
 }

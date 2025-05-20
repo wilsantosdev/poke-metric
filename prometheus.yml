@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'api'
+    static_configs:
+      - targets: ['api:8080']
+  - job_name: 'trainer'
+    static_configs:
+      - targets: ['trainer:8081']
+  - job_name: 'hunt'
+    static_configs:
+      - targets: ['hunt:8082']

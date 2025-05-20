@@ -15,6 +15,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type api struct {
@@ -87,6 +88,23 @@ func (a *api) setupRoutes() {
 	a.Router.Post("/trainer/{id}/hunt", func(w http.ResponseWriter, r *http.Request) {
 		trainerId := chi.URLParam(r, "id")
 
+		attemps, err := request.NewHuntRequest(r.Body)
+		if err != nil {
+			response, err := response.NewErrorResponse(
+				err,
+				http.StatusBadRequest,
+			).ToJSON()
+			if err != nil {
+				log.Fatal(err)
+				http.Error(w, "Failed to create error response", http.StatusInternalServerError)
+				return
+			}
+			http.Error(w, string(response), http.StatusBadRequest)
+			return
+		}
+
+		maxAttempts := attemps.MaxAttempts
+
 		trainer, err := a.TrainerService.GetTrainer(r.Context(), trainerId)
 		if err != nil {
 			log.Fatal(err)
@@ -94,12 +112,13 @@ func (a *api) setupRoutes() {
 			return
 		}
 
-		err = a.HuntService.HuntPokemon(r.Context(), *trainer)
+		err = a.HuntService.HuntPokemon(r.Context(), *trainer, maxAttempts)
 		if err != nil {
 			log.Fatal(err)
 			http.Error(w, "Failed to hunt pokemon", http.StatusInternalServerError)
 			return
 		}
+
 		json.NewEncoder(w).Encode(response.NewTrainerGoingHuntResponse(*trainer))
 		w.WriteHeader(http.StatusCreated)
 	})
@@ -118,5 +137,6 @@ func (a *api) Run() error {
 	defer shutdown()
 	a.setupMiddleware()
 	a.setupRoutes()
+	http.Handle("/metrics", promhttp.Handler())
 	return http.ListenAndServe(fmt.Sprintf(":%v", a.Port), a.Router)
 }

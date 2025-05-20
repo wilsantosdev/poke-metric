@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 	"trainer/internal/domain"
 )
 
@@ -19,6 +20,7 @@ func (t *TrainerService) CreateTrainer(ctx context.Context, name string, favorit
 	if err != nil {
 		return nil, err
 	}
+	TrainersCreated.Inc()
 	return trainer, nil
 }
 
@@ -35,5 +37,6 @@ func (t *TrainerService) AddPokemon(ctx context.Context, id string, pokemon doma
 	if err != nil {
 		return nil, err
 	}
+	PokemonsAdded.WithLabelValues(trainer.ID(), strconv.Itoa(int(pokemon.ID()))).Inc()
 	return trainer, nil
 }

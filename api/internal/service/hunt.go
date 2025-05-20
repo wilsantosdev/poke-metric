@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	huntTopic   = "hunt"
-	MaxAttempts = 5
+	huntTopic = "hunt"
 )
 
 type huntService struct {
@@ -20,8 +19,8 @@ type huntService struct {
 type huntMessage struct {
 	TrainerID           string `json:"trainer_id"`
 	FavoritePokemonType string `json:"favorite_pokemon_type"`
-	Atttempts           int    `json:"attempts"`
-	MaxAttempts         int    `json:"max_attempts"`
+	Atttempts           int32  `json:"attempts"`
+	MaxAttempts         int32  `json:"max_attempts"`
 }
 
 func NewHuntService() *huntService {
@@ -37,14 +36,14 @@ func NewHuntService() *huntService {
 	}
 }
 
-func (hs *huntService) HuntPokemon(ctx context.Context, trainer domain.Trainer) error {
+func (hs *huntService) HuntPokemon(ctx context.Context, trainer domain.Trainer, maxAttempts int32) error {
 	var huntTopicPtr = func() *string { s := huntTopic; return &s }()
 
 	jsonData, err := json.Marshal(huntMessage{
 		TrainerID:           trainer.ID(),
 		FavoritePokemonType: trainer.FavotitePokemonType(),
 		Atttempts:           0,
-		MaxAttempts:         MaxAttempts,
+		MaxAttempts:         maxAttempts,
 	})
 	if err != nil {
 		return err
