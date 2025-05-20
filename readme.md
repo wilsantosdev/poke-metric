@@ -103,3 +103,13 @@ Show total of added pokemons to a trainer
 
 #### hunt_total
 Shows every hunt and it contains (trainer_id, pokemon_id, captured and attempts)
+
+
+
+## Examples
+
+### Trainer who captured the most
+![Trainer who captured the most](m1.png)
+
+### Most caught pokemon 
+![Most caught pokemon ](m2.png)
