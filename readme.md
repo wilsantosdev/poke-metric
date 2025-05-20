@@ -90,3 +90,16 @@ docker-compose up
 > | `500`         | `application/json`                | ``
 
 </details>
+
+
+# Prometheus metrics in Grafana
+Access [Grafana](http://localhost:3000) and query by:
+
+#### trainers_created_total
+Show total of created trainers
+
+#### pokemons_added_total
+Show total of added pokemons to a trainer
+
+#### hunt_total
+Shows every hunt and it contains (trainer_id, pokemon_id, captured and attempts)
